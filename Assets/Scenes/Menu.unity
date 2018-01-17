@@ -314,7 +314,7 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 150, y: 43.75, z: 0}
+  m_Size: {x: 155, y: 46, z: 0}
   m_Center: {x: 70, y: -21.875, z: 0}
 --- !u!102 &979324205
 TextMesh:
