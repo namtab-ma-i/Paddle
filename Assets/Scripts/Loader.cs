@@ -9,7 +9,6 @@ using UnityEngine.SceneManagement;
 public class Loader : MonoBehaviour
 {
     private static int Level = 1; // current level
-    private static Loader _instance; // singleton instance
     private Vector3 transformOriginal;
     private int playerLevel;
     
@@ -18,7 +17,6 @@ public class Loader : MonoBehaviour
      */
     void Awake()
     {
-        _instance = this;
         playerLevel = PlayerPrefs.GetInt("level");
     }
 
@@ -28,15 +26,7 @@ public class Loader : MonoBehaviour
     public static void Load(int level)
     {
         Level = level;
-        if (_instance != null)
-        {
-            SceneManager.LoadScene (3); // screen scene
-        }
-        else
-        {
-            SceneManager.LoadScene (0); // level main scene
-        }
-        
+        SceneManager.LoadScene (3); // screen scene
     }
     
     /**
@@ -56,7 +46,6 @@ public class Loader : MonoBehaviour
     {
         if (SceneManager.GetActiveScene().buildIndex == 2)
         {
-            Debug.Log("onEnable");
             TextMesh levelLabel = GetComponent<TextMesh>();
             int level = int.Parse(levelLabel.text);
             if (level <= playerLevel)
@@ -75,18 +64,13 @@ public class Loader : MonoBehaviour
      */
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        //level select scene
-        if (scene.buildIndex == 2)
-        {
-            return;
-        }
         
         //loading screen
         if (scene.buildIndex == 3)
         {
             TextMesh levelNum = GameObject.Find("/Number").GetComponent<TextMesh>();
             levelNum.text = "" + Level;
-            _instance.StartCoroutine(_instance.LoadScreen());
+            StartCoroutine(LoadScreen());
             return;
         }
         
@@ -134,7 +118,6 @@ public class Loader : MonoBehaviour
     {
         int playerLevel = PlayerPrefs.GetInt("level");
         int level = int.Parse(GetComponent<TextMesh> ().text);
-        Debug.Log("Player: " + playerLevel + " loading: " + level);
         if (playerLevel >= level)
         {
             Load(level);
