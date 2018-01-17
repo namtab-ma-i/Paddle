@@ -12,12 +12,6 @@ public class Level : MonoBehaviour
 	public GameObject playerScore;
 	public GameObject enemyScore;
 
-	void Start()
-	{
-		playerScore = GameObject.Find("/DeadZone/Back");
-		enemyScore = GameObject.Find("/DeadZone/Front");
-	}
-
 	//todo: add end features; not only by score, but also by time etc
 	public void checkEnd(int playerScore, int enemyScore)
 	{
@@ -27,7 +21,6 @@ public class Level : MonoBehaviour
 			Loader.Load(++currentLevel);
 		} else if (enemyScore >= points)
 		{
-			//todo: show some die message or delete lives
 			Loader.Load(currentLevel);
 		}
 	}

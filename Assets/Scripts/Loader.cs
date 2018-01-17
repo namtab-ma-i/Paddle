@@ -1,48 +1,87 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/**
+ * Singleton utility for loading and configuring levels
+ */
 public class Loader : MonoBehaviour
 {
-    public static int Level = 1;
-    private static Loader _instance;
+    private static int Level = 1; // current level
+    private static Loader _instance; // singleton instance
+    private Vector3 transformOriginal;
+    private int playerLevel;
     
+    /**
+     * Initializing Loader instance that will be used in static context
+     */
     void Awake()
     {
         _instance = this;
+        playerLevel = PlayerPrefs.GetInt("level");
     }
 
+    /**
+     * Static method for loading next level outside the Loader class
+     */
     public static void Load(int level)
     {
         Level = level;
-        Debug.Log(Level);
         if (_instance != null)
         {
-            SceneManager.LoadScene (3);
+            SceneManager.LoadScene (3); // screen scene
         }
         else
         {
-            SceneManager.LoadScene (0);
+            SceneManager.LoadScene (0); // level main scene
         }
         
     }
     
+    /**
+     * Loading screen coroutine that shows Level <n> title for 2 seconds
+     */
     IEnumerator LoadScreen()
     {
-        yield return new WaitForSeconds(3);
+        yield return new WaitForSeconds(2);
         SceneManager.LoadScene (0);
     }
 
-    void OnEnable()
+    /**
+     * Method that allows OnSceneLoaded to be called when the scene is fully loaded
+     * Could be a single instance (main scene) or multiple instances (one for each level label on select level scene)
+     */
+    private void OnEnable()
     {
-        SceneManager.sceneLoaded += OnSceneLoaded;
+        if (SceneManager.GetActiveScene().buildIndex == 2)
+        {
+            Debug.Log("onEnable");
+            TextMesh levelLabel = GetComponent<TextMesh>();
+            int level = int.Parse(levelLabel.text);
+            if (level <= playerLevel)
+            {
+                levelLabel.color = Color.green;
+            }
+        }
+        else
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
     }
     
+    /**
+     * Main scene configuring function
+     */
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        //level select scene
+        if (scene.buildIndex == 2)
+        {
+            return;
+        }
+        
+        //loading screen
         if (scene.buildIndex == 3)
         {
             TextMesh levelNum = GameObject.Find("/Number").GetComponent<TextMesh>();
@@ -51,13 +90,15 @@ public class Loader : MonoBehaviour
             return;
         }
         
+        // level config reading and setting up
+        
         string path = "Assets/Levels/level" + Level + ".json"; //todo: encrypt & decrypt file!!!
         StreamReader reader = new StreamReader(path);
         string jsonData = reader.ReadToEnd();
         reader.Close();
         LevelConfig conf = JsonUtility.FromJson<LevelConfig>(jsonData);
         
-        //todo: make separate setup functions for enemy and level
+        //todo: make separate setup functions for enemy and level in Level class
         //todo: add more level config properties
         
         GameObject levelObj = GameObject.FindGameObjectWithTag ("Level");
@@ -70,7 +111,39 @@ public class Loader : MonoBehaviour
         GameObject enemyObj = GameObject.FindGameObjectWithTag ("Enemy");
         enemyObj.GetComponent<Enemy>().speed = conf.aispeed;
     }
+    
+    /**
+     * If added to collider makes a game object smaller
+     */
+    void OnMouseEnter () {
+        transformOriginal = transform.localScale;
+        transform.localScale *= 0.9f;
+    }
 
+    /**
+     * If added to collider makes a game object bigger again
+     */
+    void OnMouseExit () {
+        transform.localScale = transformOriginal;
+    }
+
+    /**
+     * If added to collider checks if player has already opened a level and loads it
+     */
+    void OnMouseDown ()
+    {
+        int playerLevel = PlayerPrefs.GetInt("level");
+        int level = int.Parse(GetComponent<TextMesh> ().text);
+        Debug.Log("Player: " + playerLevel + " loading: " + level);
+        if (playerLevel >= level)
+        {
+            Load(level);
+        }
+    }
+
+    /**
+     * Represents JSON level file structure 
+     */
     private class LevelConfig
     {
         public int points;

@@ -1,0 +1,11 @@
+.idea/
+Temp/
+Assembly-CSharp-Editor-firstpass.csproj
+Assembly-CSharp.csproj
+*.zip
+Library/
+Paddle.sln
+Paddle.userprefs
+ProjectSettings/
+UnityPackageManager/
+obj/
